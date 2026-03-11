@@ -9,10 +9,10 @@ servers:
   web:
     - 89.167.93.11
 
-# SSL via Let's Encrypt (set your domain).
-# proxy:
-#   ssl: true
-#   host: pulsar.yourdomain.com
+# SSL via Let's Encrypt.
+proxy:
+  ssl: true
+  host: pulsar.madgroup.kz
 
 # Container registry (use Docker Hub, GHCR, or private registry).
 registry:
