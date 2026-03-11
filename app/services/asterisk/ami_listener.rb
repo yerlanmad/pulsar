@@ -3,7 +3,10 @@ module Asterisk
     HOST = ENV.fetch("ASTERISK_AMI_HOST", "localhost")
     PORT = ENV.fetch("ASTERISK_AMI_PORT", "5038").to_i
     USERNAME = ENV.fetch("ASTERISK_AMI_USER", "admin")
-    SECRET = ENV.fetch("ASTERISK_AMI_SECRET", "admin")
+
+    def self.secret
+      Rails.application.credentials.dig(:asterisk, :ami_secret) || ENV.fetch("ASTERISK_AMI_SECRET", "admin")
+    end
 
     def initialize
       @running = false
@@ -33,7 +36,7 @@ module Asterisk
     end
 
     def login
-      send_action("Login", { Username: USERNAME, Secret: SECRET })
+      send_action("Login", { Username: USERNAME, Secret: self.class.secret })
     end
 
     def listen

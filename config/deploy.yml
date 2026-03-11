@@ -2,12 +2,12 @@
 service: pulsar
 
 # Name of the container image.
-image: pulsar
+image: erlanmad/pulsar
 
 # Deploy to these servers (replace with your VPS IP).
 servers:
   web:
-    - ${DEPLOY_HOST}
+    - 89.167.93.11
 
 # SSL via Let's Encrypt (set your domain).
 # proxy:
@@ -16,18 +16,19 @@ servers:
 
 # Container registry (use Docker Hub, GHCR, or private registry).
 registry:
-  server: ghcr.io
-  username:
-    - KAMAL_REGISTRY_USERNAME
+  # server: ghcr.io
+  # username:
+  #   - KAMAL_REGISTRY_USERNAME
+  # password:
+  #   - KAMAL_REGISTRY_PASSWORD
+  username: erlanmad
   password:
-    - KAMAL_REGISTRY_PASSWORD
+  - KAMAL_REGISTRY_PASSWORD
 
 # Environment variables.
 env:
   secret:
     - RAILS_MASTER_KEY
-    - ASTERISK_ARI_PASS
-    - ASTERISK_AMI_SECRET
   clear:
     SOLID_QUEUE_IN_PUMA: true
     WEB_CONCURRENCY: 2
@@ -63,7 +64,7 @@ builder:
 accessories:
   asterisk:
     image: andrius/asterisk:20-alpine
-    host: ${DEPLOY_HOST}
+    host: 89.167.93.11
     port:
       - "5060:5060/udp"
       - "5060:5060/tcp"
@@ -72,6 +73,8 @@ accessories:
       - "asterisk_recordings:/var/spool/asterisk/recording"
       - "asterisk_conf:/etc/asterisk/custom"
     env:
+      secret:
+        - BEELINE_SIP_PASSWORD
       clear:
         ASTERISK_UID: 1000
         ASTERISK_GID: 1000

@@ -2,13 +2,16 @@ module Asterisk
   class AriClient
     BASE_URL = ENV.fetch("ASTERISK_ARI_URL", "http://localhost:8088/ari")
     USERNAME = ENV.fetch("ASTERISK_ARI_USER", "asterisk")
-    PASSWORD = ENV.fetch("ASTERISK_ARI_PASS", "asterisk")
+
+    def self.password
+      Rails.application.credentials.dig(:asterisk, :ari_pass) || ENV.fetch("ASTERISK_ARI_PASS", "asterisk")
+    end
 
     def initialize
       @connection = Faraday.new(url: BASE_URL) do |conn|
         conn.request :json
         conn.response :json
-        conn.request :authorization, :basic, USERNAME, PASSWORD
+        conn.request :authorization, :basic, USERNAME, self.class.password
         conn.adapter Faraday.default_adapter
       end
     end
