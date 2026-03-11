@@ -1,0 +1,13 @@
+one:
+  name: Support
+  strategy: 0
+  timeout: 30
+  timeout_action: 0
+  max_wait_time: 300
+
+two:
+  name: Sales
+  strategy: 1
+  timeout: 25
+  timeout_action: 1
+  max_wait_time: 180

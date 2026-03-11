@@ -1,0 +1,32 @@
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Recording</h1>
+
+<div class="bg-white shadow rounded-lg p-6 mb-6">
+  <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+    <div>
+      <dt class="text-sm font-medium text-gray-500">From</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @recording.caller_number %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">To</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @recording.destination_number %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Agent</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @recording.agent&.name || '--' %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Duration</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @recording.duration_display %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Date</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @recording.created_at.strftime('%Y-%m-%d %H:%M:%S') %></dd>
+    </div>
+  </dl>
+
+  <audio controls class="w-full">
+    <source src="<%= stream_recording_path(@recording) %>" type="audio/wav">
+  </audio>
+</div>
+
+<%= link_to 'Back to Recordings', recordings_path, class: 'text-indigo-600 hover:text-indigo-800 text-sm' %>

@@ -1,0 +1,11 @@
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+  <%= render "stat_card", title: "Agents Online", value: "#{agents_online}/#{agents_total}", color: "green" %>
+  <%= render "stat_card", title: "Active Calls", value: active_calls, color: "blue" %>
+  <%= render "stat_card", title: "Calls Today", value: calls_today, color: "indigo" %>
+  <%= render "stat_card", title: "Abandoned Today", value: abandoned_today, color: "red" %>
+</div>
+
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 mb-8">
+  <%= render "stat_card", title: "Avg Wait Time", value: "#{avg_wait_time}s", color: "yellow" %>
+  <%= render "stat_card", title: "Avg Call Duration", value: "#{avg_duration}s", color: "purple" %>
+</div>

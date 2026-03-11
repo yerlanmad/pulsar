@@ -1,0 +1,20 @@
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
+
+<%= turbo_stream_from "dashboard_stats" %>
+
+<div id="dashboard-stats">
+  <%= render "stats", agents_online: @agents_online, agents_total: @agents_total,
+      active_calls: @active_calls, calls_today: @calls_today,
+      abandoned_today: @abandoned_today, avg_wait_time: @avg_wait_time,
+      avg_duration: @avg_duration %>
+</div>
+
+<h2 class="text-lg font-semibold text-gray-900 mb-4">Queues</h2>
+<div id="dashboard-queues" class="overflow-hidden rounded-lg bg-white shadow">
+  <%= render "queue_table", queues: @queues %>
+</div>
+
+<h2 class="text-lg font-semibold text-gray-900 mt-8 mb-4">Agents</h2>
+<div id="dashboard-agents" class="overflow-hidden rounded-lg bg-white shadow">
+  <%= render "agent_table", agents: Agent.includes(:queue_configs).order(:name) %>
+</div>

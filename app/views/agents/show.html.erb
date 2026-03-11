@@ -1,0 +1,70 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-900"><%= @agent.name %></h1>
+  <div class="flex gap-3">
+    <% if policy(@agent).update? %>
+      <%= link_to 'Edit', edit_agent_path(@agent), class: 'rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50' %>
+    <% end %>
+    <% if policy(@agent).destroy? %>
+      <%= button_to 'Delete', agent_path(@agent), method: :delete, data: { turbo_confirm: 'Are you sure?' }, class: 'rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-500' %>
+    <% end %>
+  </div>
+</div>
+
+<div class="bg-white shadow rounded-lg p-6 mb-6">
+  <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <dt class="text-sm font-medium text-gray-500">SIP Account</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @agent.sip_account %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Status</dt>
+      <dd class="mt-1"><%= status_badge(@agent.status) %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">User</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @agent.user.name %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Queues</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @agent.queue_configs.map(&:name).join(', ').presence || 'None' %></dd>
+    </div>
+  </dl>
+</div>
+
+<% if policy(@agent).update_status? %>
+  <div class="bg-white shadow rounded-lg p-6 mb-6">
+    <h2 class="text-lg font-semibold mb-4">Change Status</h2>
+    <div class="flex gap-2">
+      <% Agent.statuses.each_key do |s| %>
+        <%= button_to s.humanize, update_status_agent_path(@agent, status: s), method: :patch,
+            class: "rounded-md px-3 py-2 text-sm font-semibold #{@agent.status == s ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50'}" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Calls</h2>
+<div class="overflow-hidden rounded-lg bg-white shadow">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">To</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200 bg-white">
+      <% @agent.call_records.recent.limit(20).each do |call| %>
+        <tr>
+          <td class="px-6 py-4 text-sm text-gray-900"><%= call.caller_number %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= call.destination_number %></td>
+          <td class="px-6 py-4 text-sm"><%= status_badge(call.status) %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= call.duration_display %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= call.started_at&.strftime('%Y-%m-%d %H:%M') %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,55 @@
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Recordings</h1>
+
+<div class="bg-white shadow rounded-lg p-4 mb-6">
+  <%= form_with(url: recordings_path, method: :get, class: 'flex flex-wrap gap-3 items-end') do %>
+    <div>
+      <label class="block text-xs font-medium text-gray-500">Search (phone number)</label>
+      <%= text_field_tag :search, params[:search], class: 'mt-1 rounded-md border-gray-300 text-sm', placeholder: 'Phone number' %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-500">Agent</label>
+      <%= select_tag :agent_id, options_from_collection_for_select(@agents, :id, :name, params[:agent_id]), include_blank: 'All', class: 'mt-1 rounded-md border-gray-300 text-sm' %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-500">From</label>
+      <%= date_field_tag :date_from, params[:date_from], class: 'mt-1 rounded-md border-gray-300 text-sm' %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-500">To</label>
+      <%= date_field_tag :date_to, params[:date_to], class: 'mt-1 rounded-md border-gray-300 text-sm' %>
+    </div>
+    <div>
+      <%= submit_tag 'Filter', class: 'rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 cursor-pointer' %>
+      <%= link_to 'Clear', recordings_path, class: 'rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50' %>
+    </div>
+  <% end %>
+</div>
+
+<div class="overflow-hidden rounded-lg bg-white shadow">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">To</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Agent</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200 bg-white">
+      <% @recordings.each do |recording| %>
+        <tr>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= recording.created_at.strftime('%Y-%m-%d %H:%M') %></td>
+          <td class="px-6 py-4 text-sm text-gray-900"><%= recording.caller_number %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= recording.destination_number %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= recording.agent&.name || '--' %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= recording.duration_display %></td>
+          <td class="px-6 py-4 text-right text-sm">
+            <%= link_to 'Play', recording_path(recording), class: 'text-indigo-600 hover:text-indigo-800' %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

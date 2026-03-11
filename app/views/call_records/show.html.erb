@@ -1,0 +1,47 @@
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Call Details</h1>
+
+<div class="bg-white shadow rounded-lg p-6 mb-6">
+  <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Caller</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @call_record.caller_number %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Destination</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @call_record.destination_number %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Status</dt>
+      <dd class="mt-1"><%= status_badge(@call_record.status) %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Agent</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @call_record.agent&.name || '--' %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Queue</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @call_record.queue_config&.name || '--' %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Started</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @call_record.started_at&.strftime('%Y-%m-%d %H:%M:%S') %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Wait Time</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @call_record.wait_time ? "#{@call_record.wait_time}s" : '--' %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Duration</dt>
+      <dd class="mt-1 text-sm text-gray-900"><%= @call_record.duration_display %></dd>
+    </div>
+  </dl>
+</div>
+
+<% if @call_record.recording %>
+  <div class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Recording</h2>
+    <audio controls class="w-full">
+      <source src="<%= stream_recording_path(@call_record.recording) %>" type="audio/wav">
+    </audio>
+  </div>
+<% end %>

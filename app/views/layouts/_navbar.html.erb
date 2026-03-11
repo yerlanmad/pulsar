@@ -1,0 +1,36 @@
+<div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
+  <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+    <div class="flex h-16 shrink-0 items-center">
+      <h1 class="text-xl font-bold text-indigo-600"><%= t("app_name") %></h1>
+    </div>
+    <nav class="flex flex-1 flex-col">
+      <ul role="list" class="flex flex-1 flex-col gap-y-7">
+        <li>
+          <ul role="list" class="-mx-2 space-y-1">
+            <%= nav_link t("nav.dashboard"), dashboard_path, nil, controller_name == "dashboard" %>
+            <%= nav_link t("nav.agents"), agents_path, nil, controller_name == "agents" %>
+            <%= nav_link t("nav.queues"), queue_configs_path, nil, controller_name == "queue_configs" %>
+            <%= nav_link t("nav.routes"), route_rules_path, nil, controller_name == "route_rules" %>
+            <%= nav_link t("nav.calls"), call_records_path, nil, controller_name == "call_records" %>
+            <%= nav_link t("nav.recordings"), recordings_path, nil, controller_name == "recordings" %>
+            <% if Current.user&.admin? %>
+              <%= nav_link t("nav.users"), users_path, nil, controller_name == "users" %>
+            <% end %>
+          </ul>
+        </li>
+        <li class="mt-auto">
+          <div class="flex items-center gap-x-3 px-2 py-3 text-sm text-gray-700">
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-semibold text-xs">
+              <%= Current.user.name.first(2).upcase %>
+            </span>
+            <div class="flex-1 truncate">
+              <p class="font-semibold truncate"><%= Current.user.name %></p>
+              <p class="text-xs text-gray-500"><%= Current.user.role.capitalize %></p>
+            </div>
+            <%= button_to t("nav.logout"), session_path, method: :delete, class: "text-xs text-gray-500 hover:text-gray-700" %>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

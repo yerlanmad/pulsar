@@ -1,0 +1,77 @@
+# Name of your application. Used to uniquely configure containers.
+service: pulsar
+
+# Name of the container image.
+image: pulsar
+
+# Deploy to these servers (replace with your VPS IP).
+servers:
+  web:
+    - ${DEPLOY_HOST}
+
+# SSL via Let's Encrypt (set your domain).
+# proxy:
+#   ssl: true
+#   host: pulsar.yourdomain.com
+
+# Container registry (use Docker Hub, GHCR, or private registry).
+registry:
+  server: ghcr.io
+  username:
+    - KAMAL_REGISTRY_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Environment variables.
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - ASTERISK_ARI_PASS
+    - ASTERISK_AMI_SECRET
+  clear:
+    SOLID_QUEUE_IN_PUMA: true
+    WEB_CONCURRENCY: 2
+    ASTERISK_ARI_URL: http://pulsar-asterisk:8088/ari
+    ASTERISK_ARI_USER: asterisk
+    ASTERISK_AMI_HOST: pulsar-asterisk
+    ASTERISK_AMI_PORT: 5038
+    ASTERISK_AMI_USER: admin
+    ASTERISK_RECORDINGS_PATH: /rails/recordings
+    ASTERISK_CONFIG_PATH: /rails/asterisk_conf
+
+# Aliases for common operations.
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
+
+# Persistent storage for SQLite databases and recordings.
+volumes:
+  - "pulsar_storage:/rails/storage"
+  - "asterisk_recordings:/rails/recordings"
+  - "asterisk_conf:/rails/asterisk_conf"
+
+# Bridge assets between versions.
+asset_path: /rails/public/assets
+
+# Build for amd64 (VPS architecture).
+builder:
+  arch: amd64
+
+# Asterisk as an accessory service.
+accessories:
+  asterisk:
+    image: andrius/asterisk:20-alpine
+    host: ${DEPLOY_HOST}
+    port:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "10000-10100:10000-10100/udp"
+    volumes:
+      - "asterisk_recordings:/var/spool/asterisk/recording"
+      - "asterisk_conf:/etc/asterisk/custom"
+    env:
+      clear:
+        ASTERISK_UID: 1000
+        ASTERISK_GID: 1000

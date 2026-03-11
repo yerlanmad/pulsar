@@ -1,0 +1,54 @@
+services:
+  asterisk:
+    image: andrius/asterisk:20-alpine
+    container_name: pulsar-asterisk
+    restart: unless-stopped
+    ports:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "10000-10100:10000-10100/udp"
+      - "8088:8088"
+    volumes:
+      - ./asterisk/conf:/etc/asterisk/custom:ro
+      - asterisk_recordings:/var/spool/asterisk/recording
+      - asterisk_sounds:/var/lib/asterisk/sounds
+    environment:
+      - ASTERISK_UID=1000
+      - ASTERISK_GID=1000
+    networks:
+      - pulsar
+
+  web:
+    build: .
+    container_name: pulsar-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - pulsar_storage:/rails/storage
+      - asterisk_recordings:/rails/recordings:ro
+    environment:
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - RAILS_ENV=production
+      - SOLID_QUEUE_IN_PUMA=true
+      - ASTERISK_ARI_URL=http://asterisk:8088/ari
+      - ASTERISK_ARI_USER=asterisk
+      - ASTERISK_ARI_PASS=${ASTERISK_ARI_PASS:-asterisk}
+      - ASTERISK_AMI_HOST=asterisk
+      - ASTERISK_AMI_PORT=5038
+      - ASTERISK_AMI_USER=admin
+      - ASTERISK_AMI_SECRET=${ASTERISK_AMI_SECRET:-admin}
+      - ASTERISK_RECORDINGS_PATH=/rails/recordings
+      - ASTERISK_CONFIG_PATH=/rails/asterisk_conf
+    depends_on:
+      - asterisk
+    networks:
+      - pulsar
+
+volumes:
+  pulsar_storage:
+  asterisk_recordings:
+  asterisk_sounds:
+
+networks:
+  pulsar:

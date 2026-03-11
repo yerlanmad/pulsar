@@ -1,0 +1,25 @@
+one:
+  uniqueid: call-001
+  caller_number: "+18001234567"
+  destination_number: "+18007654321"
+  agent: one
+  queue_config: one
+  status: 2
+  started_at: 2026-03-11 11:57:05
+  answered_at: 2026-03-11 11:57:15
+  ended_at: 2026-03-11 12:00:05
+  duration: 170
+  wait_time: 10
+
+two:
+  uniqueid: call-002
+  caller_number: "+18009876543"
+  destination_number: "+18003456789"
+  agent: two
+  queue_config: two
+  status: 3
+  started_at: 2026-03-11 12:00:00
+  answered_at:
+  ended_at: 2026-03-11 12:02:00
+  duration:
+  wait_time: 120

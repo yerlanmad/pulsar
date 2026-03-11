@@ -1,0 +1,11 @@
+one:
+  name: Agent One
+  sip_account: SIP/1001
+  status: 0
+  user: two
+
+two:
+  name: Agent Two
+  sip_account: SIP/1002
+  status: 1
+  user: one

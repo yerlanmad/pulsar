@@ -1,0 +1,39 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Queues</h1>
+  <% if policy(QueueConfig).create? %>
+    <%= link_to 'New Queue', new_queue_config_path, class: 'rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500' %>
+  <% end %>
+</div>
+
+<div class="overflow-hidden rounded-lg bg-white shadow">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strategy</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Agents</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timeout</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timeout Action</th>
+        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200 bg-white">
+      <% @queue_configs.each do |queue| %>
+        <tr>
+          <td class="px-6 py-4 text-sm font-medium">
+            <%= link_to queue.name, queue_config_path(queue), class: 'text-indigo-600 hover:text-indigo-800' %>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= queue.strategy.humanize %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= queue.agents_online_count %>/<%= queue.agents.count %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= queue.timeout %>s</td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= queue.timeout_action.humanize %></td>
+          <td class="px-6 py-4 text-right text-sm">
+            <% if policy(queue).update? %>
+              <%= link_to 'Edit', edit_queue_config_path(queue), class: 'text-indigo-600 hover:text-indigo-800' %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

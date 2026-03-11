@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  call_record: one
+  file_path: MyString
+  file_size: 1
+  duration: 1
+
+two:
+  call_record: two
+  file_path: MyString
+  file_size: 1
+  duration: 1

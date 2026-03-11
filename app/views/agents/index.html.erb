@@ -1,0 +1,37 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Agents</h1>
+  <% if policy(Agent).create? %>
+    <%= link_to 'New Agent', new_agent_path, class: 'rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500' %>
+  <% end %>
+</div>
+
+<div class="overflow-hidden rounded-lg bg-white shadow">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SIP Account</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Queues</th>
+        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200 bg-white">
+      <% @agents.each do |agent| %>
+        <tr>
+          <td class="px-6 py-4 text-sm font-medium text-gray-900">
+            <%= link_to agent.name, agent_path(agent), class: 'text-indigo-600 hover:text-indigo-800' %>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= agent.sip_account %></td>
+          <td class="px-6 py-4 text-sm"><%= status_badge(agent.status) %></td>
+          <td class="px-6 py-4 text-sm text-gray-500"><%= agent.queue_configs.map(&:name).join(', ') %></td>
+          <td class="px-6 py-4 text-right text-sm">
+            <% if policy(agent).update? %>
+              <%= link_to 'Edit', edit_agent_path(agent), class: 'text-indigo-600 hover:text-indigo-800' %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
