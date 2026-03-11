@@ -1,6 +1,6 @@
 services:
   asterisk:
-    image: andrius/asterisk:20-alpine
+    image: andrius/asterisk:20
     container_name: pulsar-asterisk
     restart: unless-stopped
     ports:

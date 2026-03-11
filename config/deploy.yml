@@ -63,7 +63,7 @@ builder:
 # Asterisk as an accessory service.
 accessories:
   asterisk:
-    image: andrius/asterisk:20-alpine
+    image: andrius/asterisk:20
     host: 89.167.93.11
     port: "5060:5060"
     options:
