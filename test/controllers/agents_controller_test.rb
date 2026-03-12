@@ -24,7 +24,7 @@ class AgentsControllerTest < ActionDispatch::IntegrationTest
   test "create" do
     new_user = User.create!(name: "New", email_address: "new@test.com", password: "password")
     assert_difference("Agent.count") do
-      post agents_path, params: { agent: { name: "New Agent", sip_account: "SIP/9999", user_id: new_user.id } }
+      post agents_path, params: { agent: { name: "New Agent", sip_account: "9999", user_id: new_user.id } }
     end
     assert_redirected_to agent_path(Agent.last)
   end

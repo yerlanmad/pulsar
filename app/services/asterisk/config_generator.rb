@@ -80,13 +80,14 @@ module Asterisk
     end
 
     def queue_section(queue)
+      queue_name = queue.name.downcase.gsub(/\s+/, "_")
       members = queue.queue_memberships.order(:priority).map do |m|
         ext = m.agent.sip_account.delete_prefix("SIP/").delete_prefix("PJSIP/")
         "member => PJSIP/#{ext},#{m.priority}"
       end
 
       <<~CONF
-        [#{queue.name.downcase.gsub(/\s+/, '_')}]
+        [#{queue_name}]
         musicclass=default
         strategy=#{queue.strategy}
         timeout=#{queue.timeout}
@@ -114,14 +115,15 @@ module Asterisk
       queue_name = rule.queue_config.name.downcase.gsub(/\s+/, "_")
       pattern = rule.pattern.gsub("*", ".")
       timeout = rule.queue_config.max_wait_time
+      timeout_handling = timeout_action_dialplan(rule.queue_config)
 
       <<~CONF
         ; #{rule.name}
         exten => _#{pattern},1,NoOp(#{rule.name}: ${EXTEN})
          same => n,Answer()
-         same => n,MixMonitor(${UNIQUEID}.wav)
+         same => n,MixMonitor(/var/spool/asterisk/recording/${UNIQUEID}.wav)
          same => n,Queue(#{queue_name},t,,,#{timeout})
-         same => n,Hangup()
+        #{timeout_handling} same => n,Hangup()
 
       CONF
     end
@@ -129,12 +131,29 @@ module Asterisk
     def extensions_default_route
       <<~CONF
         ; Default catch-all
+        exten => _+.,1,NoOp(Default route: ${EXTEN})
+         same => n,Answer()
+         same => n,MixMonitor(/var/spool/asterisk/recording/${UNIQUEID}.wav)
+         same => n,Queue(support,t,,,300)
+         same => n,Hangup()
+
         exten => _X.,1,NoOp(Default route: ${EXTEN})
          same => n,Answer()
-         same => n,MixMonitor(${UNIQUEID}.wav)
+         same => n,MixMonitor(/var/spool/asterisk/recording/${UNIQUEID}.wav)
          same => n,Queue(support,t,,,300)
          same => n,Hangup()
       CONF
+    end
+
+    def timeout_action_dialplan(queue_config)
+      case queue_config.timeout_action
+      when "voicemail"
+        " same => n,Playback(vm-goodbye)\n"
+      when "redirect"
+        " same => n,Queue(support,t,,,300)\n"
+      else
+        ""
+      end
     end
 
     def write_config(filename, content)

@@ -18,13 +18,14 @@ class SyncAsteriskConfigJob < ApplicationJob
       generator.generate_all
       reload_asterisk("all")
     end
+  rescue => e
+    Rails.logger.error("SyncAsteriskConfigJob failed (#{config_type}): #{e.message}")
   end
 
   private
 
   def reload_asterisk(module_name)
-    Rails.logger.info("Asterisk reload requested: #{module_name}")
-    # TODO: send AMI reload command when Asterisk is connected
-    # Asterisk::AmiClient.new.reload(module_name)
+    Rails.logger.info("Asterisk reload: #{module_name}")
+    Asterisk::AmiCommand.new.reload(module_name)
   end
 end

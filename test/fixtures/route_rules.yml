@@ -1,13 +1,11 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
-  name: MyString
-  pattern: MyString
+  name: Support Route
+  pattern: "+1800*"
   queue_config: one
   position: 1
 
 two:
-  name: MyString
-  pattern: MyString
+  name: Sales Route
+  pattern: "+1900*"
   queue_config: two
-  position: 1
+  position: 2

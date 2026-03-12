@@ -2,7 +2,7 @@ require "test_helper"
 
 class AgentTest < ActiveSupport::TestCase
   test "validates presence of name" do
-    agent = Agent.new(sip_account: "SIP/9999", user: users(:one))
+    agent = Agent.new(sip_account: "9999", user: users(:one))
     assert_not agent.valid?
     assert_includes agent.errors[:name], "can't be blank"
   end

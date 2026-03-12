@@ -48,7 +48,11 @@ class AgentsController < ApplicationController
 
   def update_status
     authorize @agent
-    @agent.update!(status: params[:status])
+    new_status = params[:status]
+
+    @agent.update!(status: new_status)
+    sync_agent_queue_status(@agent, new_status)
+
     redirect_back fallback_location: agents_path, notice: t("agents.status_changed", status: @agent.status)
   end
 
@@ -60,5 +64,20 @@ class AgentsController < ApplicationController
 
   def agent_params
     params.require(:agent).permit(:name, :sip_account, :status, :user_id)
+  end
+
+  def sync_agent_queue_status(agent, status)
+    manager = Asterisk::QueueManager.new
+
+    agent.queue_configs.each do |queue|
+      case status.to_s
+      when "on_break"
+        manager.pause_member(queue, agent, paused: true)
+      when "online"
+        manager.pause_member(queue, agent, paused: false)
+      end
+    end
+  rescue => e
+    Rails.logger.error("Failed to sync agent queue status: #{e.message}")
   end
 end
