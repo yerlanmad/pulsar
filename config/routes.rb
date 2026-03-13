@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   resources :recordings, only: %i[index show] do
     member do
       get :stream
+      get :download
     end
   end
 

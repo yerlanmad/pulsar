@@ -39,4 +39,16 @@ class RecordingsController < ApplicationController
       head :not_found
     end
   end
+
+  def download
+    recording = Recording.find(params[:id])
+    authorize recording, :show?
+
+    if recording.file_path.present? && File.exist?(recording.file_path)
+      filename = "recording-#{recording.call_record&.uniqueid || recording.id}.wav"
+      send_file recording.file_path, type: "audio/wav", disposition: "attachment", filename: filename
+    else
+      head :not_found
+    end
+  end
 end
