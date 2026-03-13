@@ -85,6 +85,12 @@ module Asterisk
         handle_member_pause(event)
       when "AgentRingNoAnswer"
         handle_ring_no_answer(event)
+      when "DialBegin"
+        handle_dial_begin(event)
+      when "DialEnd"
+        handle_dial_end(event)
+      when "Hangup"
+        handle_hangup(event)
       end
     rescue => e
       Rails.logger.error("AMI event processing error: #{e.message} — Event: #{event['Event']}")
@@ -230,6 +236,76 @@ module Asterisk
         name: agent.name,
         status: new_status
       })
+
+      broadcast_dashboard
+    end
+
+    def handle_hangup(event)
+      uniqueid = event["Uniqueid"]
+      call_record = CallRecord.find_by(uniqueid: uniqueid)
+      return unless call_record
+      return if call_record.completed? || call_record.failed? || call_record.abandoned?
+
+      duration = if call_record.answered_at
+                   (Time.current - call_record.answered_at).to_i
+                 end
+
+      call_record.update(
+        status: :completed,
+        ended_at: Time.current,
+        duration: duration
+      )
+
+      attach_recording(call_record)
+      broadcast_dashboard
+    end
+
+    def handle_dial_begin(event)
+      # Only track outbound calls (from-internal context)
+      context = event["DestContext"] || event["Context"]
+      return unless context == "from-internal" || event["DialString"]&.include?("@")
+
+      uniqueid = event["Uniqueid"]
+      caller_ext = event["CallerIDNum"]
+      dest_num = event["DestCallerIDNum"] || event["DialString"]&.gsub(/.*\//, "")&.gsub(/@.*/, "")
+
+      CallRecord.find_or_create_by(uniqueid: uniqueid) do |r|
+        r.caller_number = caller_ext
+        r.destination_number = dest_num
+        r.agent = Agent.find_by(sip_account: caller_ext)
+        r.status = :queued
+        r.started_at = Time.current
+      end
+
+      broadcast_dashboard
+    end
+
+    def handle_dial_end(event)
+      uniqueid = event["Uniqueid"]
+      dial_status = event["DialStatus"]
+
+      call_record = CallRecord.find_by(uniqueid: uniqueid)
+      return unless call_record
+
+      case dial_status
+      when "ANSWER"
+        call_record.update(
+          status: :answered,
+          answered_at: Time.current,
+          destination_number: event["DestCallerIDNum"] || call_record.destination_number
+        )
+      when "NOANSWER", "BUSY", "CONGESTION", "CHANUNAVAIL"
+        call_record.update(
+          status: :failed,
+          ended_at: Time.current
+        )
+        attach_recording(call_record)
+      when "CANCEL"
+        call_record.update(
+          status: :abandoned,
+          ended_at: Time.current
+        )
+      end
 
       broadcast_dashboard
     end

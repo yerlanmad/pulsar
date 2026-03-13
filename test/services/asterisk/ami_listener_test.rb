@@ -223,6 +223,92 @@ class Asterisk::AmiListenerTest < ActiveSupport::TestCase
     assert_equal 45, record.wait_time
   end
 
+  test "handle_dial_begin creates call record for outbound call" do
+    assert_difference "CallRecord.count" do
+      event = {
+        "Event" => "DialBegin",
+        "Uniqueid" => "test-dial-001",
+        "CallerIDNum" => "1001",
+        "DestCallerIDNum" => "+971542572940",
+        "DialString" => "+971542572940@twilio-trunk",
+        "Context" => "from-internal"
+      }
+
+      @listener.send(:process_event, event)
+    end
+
+    record = CallRecord.find_by(uniqueid: "test-dial-001")
+    assert_equal "queued", record.status
+    assert_equal "1001", record.caller_number
+    assert_equal "+971542572940", record.destination_number
+    assert_equal agents(:one), record.agent
+  end
+
+  test "handle_dial_end marks call as answered" do
+    CallRecord.create!(uniqueid: "test-dialend-001", caller_number: "1001", status: :queued, started_at: 1.minute.ago)
+
+    event = {
+      "Event" => "DialEnd",
+      "Uniqueid" => "test-dialend-001",
+      "DialStatus" => "ANSWER",
+      "DestCallerIDNum" => "+971542572940"
+    }
+
+    @listener.send(:process_event, event)
+
+    record = CallRecord.find_by(uniqueid: "test-dialend-001")
+    assert_equal "answered", record.status
+    assert_not_nil record.answered_at
+  end
+
+  test "handle_dial_end marks call as failed on NOANSWER" do
+    CallRecord.create!(uniqueid: "test-noanswer-001", caller_number: "1001", status: :queued, started_at: 1.minute.ago)
+
+    event = {
+      "Event" => "DialEnd",
+      "Uniqueid" => "test-noanswer-001",
+      "DialStatus" => "NOANSWER"
+    }
+
+    @listener.send(:process_event, event)
+
+    record = CallRecord.find_by(uniqueid: "test-noanswer-001")
+    assert_equal "failed", record.status
+  end
+
+  test "handle_hangup completes answered call with duration" do
+    started = 3.minutes.ago
+    answered = 2.minutes.ago
+    CallRecord.create!(uniqueid: "test-hangup-001", caller_number: "1001", status: :answered, started_at: started, answered_at: answered)
+
+    event = {
+      "Event" => "Hangup",
+      "Uniqueid" => "test-hangup-001"
+    }
+
+    @listener.send(:process_event, event)
+
+    record = CallRecord.find_by(uniqueid: "test-hangup-001")
+    assert_equal "completed", record.status
+    assert_not_nil record.ended_at
+    assert_operator record.duration, :>, 0
+  end
+
+  test "handle_hangup does not overwrite already completed call" do
+    CallRecord.create!(uniqueid: "test-hangup-done", caller_number: "1001", status: :completed, started_at: 5.minutes.ago, ended_at: 1.minute.ago, duration: 120)
+
+    event = {
+      "Event" => "Hangup",
+      "Uniqueid" => "test-hangup-done"
+    }
+
+    @listener.send(:process_event, event)
+
+    record = CallRecord.find_by(uniqueid: "test-hangup-done")
+    assert_equal "completed", record.status
+    assert_equal 120, record.duration
+  end
+
   test "find_queue matches queue by normalized name" do
     queue = @listener.send(:find_queue, "support")
     assert_equal queue_configs(:one), queue
