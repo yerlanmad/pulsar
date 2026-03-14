@@ -43,9 +43,11 @@ bin/rails db:seed      # Seed data
 
 ### Deployment
 ```bash
-bin/kamal deploy   # Deploy via Kamal
-bin/kamal console  # Remote Rails console
-bin/kamal logs     # View production logs
+bin/kamal deploy                        # Deploy Rails app via Kamal
+bin/kamal console                       # Remote Rails console
+bin/kamal logs                          # View production logs
+bash script/deploy-asterisk.sh          # Deploy Asterisk configs (requires BEELINE_SIP_PASSWORD, TWILIO_SIP_PASSWORD)
+bin/rails recordings:import             # Import existing recording files into DB (run on server)
 ```
 
 ## Architecture
@@ -58,14 +60,43 @@ bin/kamal logs     # View production logs
 - **Auth:** Rails built-in authentication (`rails g authentication`)
 - **Authorization:** Pundit (roles: admin, supervisor, agent)
 - **Asterisk integration:** ARI (REST) + AMI (TCP) via service objects in `app/services/asterisk/`
-- **Deployment:** Docker + Kamal, Nginx reverse proxy
+- **Deployment:** Docker + Kamal to VPS, Asterisk as Kamal accessory container
+
+## Asterisk Integration (Critical Path)
+
+The Rails app communicates with Asterisk via two protocols:
+
+### AMI (Asterisk Manager Interface) — TCP port 5038
+- **AmiListener** (`app/services/asterisk/ami_listener.rb`) — long-lived TCP connection in a background thread, started automatically via `config/initializers/ami_listener.rb`. Captures real-time events: call join/connect/complete/abandon, agent status (PeerStatus, DeviceStateChange, QueueMemberPause), outbound calls (DialBegin/DialEnd/Hangup). Creates CallRecord and Recording entries, broadcasts dashboard updates via Turbo Streams.
+- **AmiCommand** (`app/services/asterisk/ami_command.rb`) — short-lived TCP connections for sending commands: reload modules, QueueAdd/QueueRemove/QueuePause. Used by SyncAsteriskConfigJob and QueueManager.
+
+### ARI (Asterisk REST Interface) — HTTP port 8088
+- **AriClient** (`app/services/asterisk/ari_client.rb`) — Faraday-based REST client for channel/bridge/endpoint operations.
+
+### Config Generation
+- **ConfigGenerator** (`app/services/asterisk/config_generator.rb`) — generates `pjsip_agents.conf`, `queues_dynamic.conf`, `extensions_routes.conf` from database records. Written to shared Docker volume at `ASTERISK_CONFIG_PATH`.
+- **SyncAsteriskConfigJob** — triggered by model callbacks (Agent, QueueConfig, RouteRule, QueueMembership). Generates configs and reloads Asterisk via AMI.
+- **QueueManager** (`app/services/asterisk/queue_manager.rb`) — real-time queue member add/remove/pause via AMI commands.
+
+### Asterisk Config Files (`asterisk/conf/`)
+- `pjsip.conf` — SIP trunks (Beeline, Twilio), agent endpoints, NAT transport. Trunk passwords use placeholders (`BEELINE_PASSWORD_PLACEHOLDER`, `TWILIO_PASSWORD_PLACEHOLDER`) substituted by `deploy-asterisk.sh`.
+- `extensions.conf` — dialplan with MixMonitor recording on all paths. Prefix `9` = Beeline outbound, prefix `8` = Twilio outbound.
+- `rtp.conf` — RTP port range MUST match Docker published ports (10000-10100).
+- `queues.conf` — static queue definitions with members.
+
+### Docker Volume Sharing
+- `asterisk_recordings` volume: Asterisk writes to `/var/spool/asterisk/recording/`, Rails reads from `/rails/recordings/`
+- `asterisk_conf` volume: Rails writes generated configs to `/rails/asterisk_conf/`, Asterisk reads from `/etc/asterisk/custom/`
 
 ## Key Conventions
 
 - Linting follows **rubocop-rails-omakase** (Basecamp's opinionated style)
 - Tests use **Minitest** with parallel execution
 - Frontend uses **Turbo Frames/Streams** for live updates — avoid adding JS frameworks
-- Real-time monitoring (agent status, queue stats, call status) via Action Cable channels
-- Asterisk communication isolated in `app/services/asterisk/` service objects
-- Recording files stored locally with architecture ready for S3 migration (Active Storage)
+- Real-time dashboard updates broadcast via `BroadcastDashboardJob` triggered by AMI events
+- Three Action Cable channels: `AgentStatusChannel`, `QueueStatsChannel`, `CallStatusChannel`
+- Asterisk communication isolated in `app/services/asterisk/` — never call AMI/ARI from models or controllers directly
+- Agent `sip_account` stored as bare extension (e.g. `1001`, not `SIP/1001` or `PJSIP/1001`)
+- Recording files stored locally as WAV; architecture ready for S3 migration (Active Storage)
+- Sensitive credentials: ARI password and AMI secret in Rails encrypted credentials (`bin/rails credentials:edit`); SIP trunk passwords as env vars substituted at deploy time
 - All UI text goes through Rails I18n (`config/locales/`), default locale: EN
