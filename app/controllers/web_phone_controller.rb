@@ -8,7 +8,7 @@ class WebPhoneController < ApplicationController
       sip_user: ext,
       sip_password: "changeme#{ext}",
       sip_domain: asterisk_host,
-      ws_url: "ws://#{asterisk_host}:8088/ws"
+      ws_url: "wss://#{asterisk_ws_host}:8089/ws"
     }
   end
 
@@ -20,5 +20,9 @@ class WebPhoneController < ApplicationController
 
   def asterisk_host
     ENV.fetch("ASTERISK_WS_HOST", "89.167.93.11")
+  end
+
+  def asterisk_ws_host
+    ENV.fetch("ASTERISK_WS_HOST", "pulsar.madgroup.kz")
   end
 end
