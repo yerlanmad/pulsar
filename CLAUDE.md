@@ -46,7 +46,7 @@ bin/rails db:seed      # Seed data
 bin/kamal deploy                        # Deploy Rails app via Kamal
 bin/kamal console                       # Remote Rails console
 bin/kamal logs                          # View production logs
-bash script/deploy-asterisk.sh          # Deploy Asterisk configs (requires BEELINE_SIP_PASSWORD, TWILIO_SIP_PASSWORD)
+bash script/deploy-asterisk.sh          # Deploy Asterisk configs (requires TWILIO_SIP_PASSWORD)
 bin/rails recordings:import             # Import existing recording files into DB (run on server)
 ```
 
@@ -79,8 +79,8 @@ The Rails app communicates with Asterisk via two protocols:
 - **QueueManager** (`app/services/asterisk/queue_manager.rb`) — real-time queue member add/remove/pause via AMI commands.
 
 ### Asterisk Config Files (`asterisk/conf/`)
-- `pjsip.conf` — SIP trunks (Beeline, Twilio), agent endpoints, NAT transport. Trunk passwords use placeholders (`BEELINE_PASSWORD_PLACEHOLDER`, `TWILIO_PASSWORD_PLACEHOLDER`) substituted by `deploy-asterisk.sh`.
-- `extensions.conf` — dialplan with MixMonitor recording on all paths. Prefix `9` = Beeline outbound, prefix `8` = Twilio outbound.
+- `pjsip.conf` — SIP trunk (Twilio), agent endpoints, NAT transport. Trunk password uses placeholder (`TWILIO_PASSWORD_PLACEHOLDER`) substituted by `deploy-asterisk.sh`.
+- `extensions.conf` — dialplan with MixMonitor recording on all paths. Prefix `8` = Twilio outbound.
 - `rtp.conf` — RTP port range MUST match Docker published ports (10000-10100).
 - `queues.conf` — static queue definitions with members.
 

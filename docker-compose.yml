@@ -15,7 +15,6 @@ services:
     environment:
       - ASTERISK_UID=1000
       - ASTERISK_GID=1000
-      - BEELINE_SIP_PASSWORD=${BEELINE_SIP_PASSWORD}
     networks:
       - pulsar
 

@@ -74,8 +74,6 @@ accessories:
       - "asterisk_recordings:/var/spool/asterisk/recording"
       - "asterisk_conf:/etc/asterisk/custom"
     env:
-      secret:
-        - BEELINE_SIP_PASSWORD
       clear:
         ASTERISK_UID: 1000
         ASTERISK_GID: 1000
