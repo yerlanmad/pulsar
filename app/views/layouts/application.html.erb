@@ -15,6 +15,9 @@
   <body class="h-full">
     <% if Current.user %>
       <%= render 'layouts/navbar' %>
+      <% if current_agent %>
+        <%= render 'layouts/web_phone' %>
+      <% end %>
     <% end %>
 
     <main class="<%= Current.user ? 'lg:pl-64' : '' %>">

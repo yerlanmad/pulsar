@@ -57,6 +57,10 @@ module Asterisk
         auth=#{ext}-auth
         aors=#{ext}
 
+        [#{ext}-webrtc](agent-webrtc-template)
+        auth=#{ext}-auth
+        aors=#{ext}
+
         [#{ext}-auth](agent-template-auth)
         username=#{ext}
         password=changeme#{ext}

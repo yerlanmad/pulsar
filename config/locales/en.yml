@@ -134,6 +134,17 @@ en:
     submit: "Sign in"
     forgot_password: "Forgot password?"
 
+  web_phone:
+    title: "Phone"
+    incoming_call: "Incoming Call"
+    answer: "Answer"
+    reject: "Reject"
+    call: "Call"
+    hangup: "Hang Up"
+    mute: "Mute"
+    unmute: "Unmute"
+    enter_number: "Enter number..."
+
   common:
     actions: "Actions"
     edit: "Edit"

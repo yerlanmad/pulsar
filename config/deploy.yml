@@ -69,6 +69,7 @@ accessories:
     options:
       publish:
         - "5060:5060/udp"
+        - "8088:8088"
         - "10000-10100:10000-10100/udp"
     volumes:
       - "asterisk_recordings:/var/spool/asterisk/recording"

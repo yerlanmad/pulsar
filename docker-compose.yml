@@ -6,8 +6,8 @@ services:
     ports:
       - "5060:5060/udp"
       - "5060:5060/tcp"
-      - "10000-10100:10000-10100/udp"
       - "8088:8088"
+      - "10000-10100:10000-10100/udp"
     volumes:
       - ./asterisk/conf:/etc/asterisk/custom:ro
       - asterisk_recordings:/var/spool/asterisk/recording
