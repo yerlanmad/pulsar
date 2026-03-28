@@ -53,11 +53,7 @@ module Asterisk
 
     def pjsip_endpoint(ext)
       <<~CONF
-        [#{ext}](agent-template)
-        auth=#{ext}-auth
-        aors=#{ext}
-
-        [#{ext}-webrtc](agent-webrtc-template)
+        [#{ext}](agent-webrtc-template)
         auth=#{ext}-auth
         aors=#{ext}
 
